@@ -6,6 +6,15 @@ import { uploadFileToSupabase } from '@/app/services/uploadFileToSupabase';
 
 export async function POST(req: NextRequest) {
   try {
+    // Check if Supabase client is available
+    if (!supabase) {
+      console.error('Supabase client is not initialized');
+      return NextResponse.json(
+        { success: false, message: 'Database connection not available' },
+        { status: 503 }
+      );
+    }
+
     const formData = await req.formData();
     
     // Extract form data

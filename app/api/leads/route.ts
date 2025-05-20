@@ -4,6 +4,15 @@ import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/app/services/supabaseClient';
 
 export async function GET(req: NextRequest) {
+  // Check if Supabase client is available
+  if (!supabase) {
+    console.error('Supabase client is not initialized');
+    return NextResponse.json(
+      { error: 'Database connection not available' },
+      { status: 503 }
+    );
+  }
+
   const { data, error } = await supabase.from('leads').select('*').order('submitted_at', { ascending: false });
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
