@@ -1,51 +1,90 @@
+import { Lead, LeadStatus } from '../types';
 import { leadService } from './api';
-import { LeadStatus } from '../types';
 
-// Mock timers
-jest.useFakeTimers();
+// Mock global fetch
+global.fetch = jest.fn();
+
+// Mock response helper
+function mockFetchResponse(data: any, status = 200, statusText = 'OK') {
+  return Promise.resolve({
+    status,
+    statusText,
+    ok: status >= 200 && status < 300,
+    json: () => Promise.resolve(data),
+  } as Response);
+}
 
 describe('leadService', () => {
-  // Reset any mock timers or implementations before each test
   beforeEach(() => {
+    // Clear all mocks between tests
     jest.clearAllMocks();
+    (global.fetch as jest.Mock).mockClear();
   });
 
   describe('getLeads', () => {
     it('returns a list of leads', async () => {
+      const mockLeads: Lead[] = [
+        {
+          id: '1',
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john@example.com',
+          country: 'USA',
+          linkedInProfile: 'https://linkedin.com/in/johndoe',
+          status: LeadStatus.PENDING,
+          submittedAt: '2023-01-01',
+          visasOfInterest: ['O-1'],
+          additionalInformation: 'Test information',
+        },
+      ];
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce(
+        mockFetchResponse(mockLeads)
+      );
+
       const leads = await leadService.getLeads();
-      
-      // Should have at least one lead
-      expect(leads.length).toBeGreaterThan(0);
-      
-      // Each lead should have the required fields
-      leads.forEach(lead => {
-        expect(lead).toHaveProperty('id');
-        expect(lead).toHaveProperty('firstName');
-        expect(lead).toHaveProperty('lastName');
-        expect(lead).toHaveProperty('email');
-        expect(lead).toHaveProperty('linkedInProfile');
-        expect(lead).toHaveProperty('status');
-        expect(lead).toHaveProperty('submittedAt');
-        expect(lead).toHaveProperty('visasOfInterest');
-      });
+      expect(leads).toEqual(mockLeads);
+      expect(global.fetch).toHaveBeenCalledWith('/api/leads');
+    });
+
+    it('throws error on failed fetch', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce(
+        mockFetchResponse({ message: 'Failed to fetch leads' }, 500)
+      );
+
+      await expect(leadService.getLeads()).rejects.toThrow('Failed to fetch leads');
     });
   });
 
   describe('getLead', () => {
     it('returns a lead by ID', async () => {
-      // First get all leads to get a valid ID
-      const leads = await leadService.getLeads();
-      const leadId = leads[0].id;
-      
-      // Now get a specific lead
-      const lead = await leadService.getLead(leadId);
-      
-      // Verify the lead exists and has the correct ID
-      expect(lead).not.toBeNull();
-      expect(lead?.id).toBe(leadId);
+      const mockLead: Lead = {
+        id: '1',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john@example.com',
+        country: 'USA',
+        linkedInProfile: 'https://linkedin.com/in/johndoe',
+        status: LeadStatus.PENDING,
+        submittedAt: '2023-01-01',
+        visasOfInterest: ['O-1'],
+        additionalInformation: 'Test information',
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce(
+        mockFetchResponse(mockLead)
+      );
+
+      const lead = await leadService.getLead('1');
+      expect(lead).toEqual(mockLead);
+      expect(global.fetch).toHaveBeenCalledWith('/api/leads/1');
     });
 
     it('returns null for non-existent lead ID', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce(
+        mockFetchResponse({ message: 'Lead not found' }, 404)
+      );
+
       const lead = await leadService.getLead('non-existent-id');
       expect(lead).toBeNull();
     });
@@ -53,75 +92,75 @@ describe('leadService', () => {
 
   describe('submitLead', () => {
     it('creates a new lead', async () => {
-      const leadData = {
-        firstName: 'Test',
-        lastName: 'User',
-        email: 'test@example.com',
-        linkedInProfile: 'https://linkedin.com/in/testuser',
-        visasOfInterest: ['H-1B'],
-        country: 'Test Country'
+      const mockLead: Lead = {
+        id: '1',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john@example.com',
+        country: 'USA',
+        linkedInProfile: 'https://linkedin.com/in/johndoe',
+        status: LeadStatus.PENDING,
+        submittedAt: '2023-01-01',
+        visasOfInterest: ['O-1'],
+        additionalInformation: 'Test information',
       };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce(
+        mockFetchResponse({ lead: mockLead })
+      );
+
+      const formData = new FormData();
+      formData.append('firstName', 'John');
       
-      // Submit the lead
-      const newLead = await leadService.submitLead(leadData);
-      
-      // Verify the lead was created with correct data
-      expect(newLead).toHaveProperty('id');
-      expect(newLead.firstName).toBe(leadData.firstName);
-      expect(newLead.lastName).toBe(leadData.lastName);
-      expect(newLead.email).toBe(leadData.email);
-      expect(newLead.linkedInProfile).toBe(leadData.linkedInProfile);
-      expect(newLead.status).toBe(LeadStatus.PENDING);
-      expect(newLead.visasOfInterest).toEqual(leadData.visasOfInterest);
-      expect(newLead.country).toBe(leadData.country);
-      
-      // Check if submittedAt is a valid date string
-      expect(Date.parse(newLead.submittedAt)).not.toBeNaN();
+      const lead = await leadService.submitLead(formData);
+      expect(lead).toEqual(mockLead);
+      expect(global.fetch).toHaveBeenCalledWith('/api/assessment', expect.any(Object));
     });
   });
 
   describe('updateLeadStatus', () => {
     it('updates a lead status', async () => {
-      // First get all leads to get a valid ID
-      const leads = await leadService.getLeads();
-      const leadId = leads[0].id;
-      const initialStatus = leads[0].status;
-      
-      // Determine the new status (opposite of current)
-      const newStatus = initialStatus === LeadStatus.PENDING
-        ? LeadStatus.REACHED_OUT
-        : LeadStatus.PENDING;
-      
-      // Update the lead status
-      const updatedLead = await leadService.updateLeadStatus(leadId, newStatus);
-      
-      // Verify the status was updated
-      expect(updatedLead.id).toBe(leadId);
-      expect(updatedLead.status).toBe(newStatus);
+      const mockLead: Lead = {
+        id: '1',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john@example.com',
+        country: 'USA',
+        linkedInProfile: 'https://linkedin.com/in/johndoe',
+        status: LeadStatus.REACHED_OUT,
+        submittedAt: '2023-01-01',
+        visasOfInterest: ['O-1'],
+        additionalInformation: 'Test information',
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce(
+        mockFetchResponse(mockLead)
+      );
+
+      const updatedLead = await leadService.updateLeadStatus('1', LeadStatus.REACHED_OUT);
+      expect(updatedLead).toEqual(mockLead);
+      expect(global.fetch).toHaveBeenCalledWith('/api/leads/1', expect.any(Object));
     });
 
     it('throws error for non-existent lead ID', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce(
+        mockFetchResponse({ message: 'Lead not found' }, 404)
+      );
+
       await expect(
         leadService.updateLeadStatus('non-existent-id', LeadStatus.PENDING)
-      ).rejects.toThrow('Lead not found');
+      ).rejects.toThrow('Failed to update lead status');
     });
   });
 
   describe('deleteLead', () => {
     it('deletes a lead', async () => {
-      // First get all leads to get a valid ID
-      const initialLeads = await leadService.getLeads();
-      const leadId = initialLeads[0].id;
-      const initialCount = initialLeads.length;
-      
-      // Delete the lead
-      await leadService.deleteLead(leadId);
-      
-      // Verify the lead was deleted
-      const remainingLeads = await leadService.getLeads();
-      
-      expect(remainingLeads.length).toBe(initialCount - 1);
-      expect(remainingLeads.find(lead => lead.id === leadId)).toBeUndefined();
+      (global.fetch as jest.Mock).mockResolvedValueOnce(
+        mockFetchResponse({ success: true })
+      );
+
+      await expect(leadService.deleteLead('1')).resolves.not.toThrow();
+      expect(global.fetch).toHaveBeenCalledWith('/api/leads/1', expect.any(Object));
     });
   });
 }); 

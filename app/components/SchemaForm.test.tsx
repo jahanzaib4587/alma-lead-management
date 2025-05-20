@@ -4,7 +4,13 @@ import '@testing-library/jest-dom';
 
 // Mock the @mui/material dependencies
 jest.mock('@mui/material/styles', () => ({
-  createTheme: jest.fn(() => ({})),
+  createTheme: jest.fn(() => ({ 
+    breakpoints: { 
+      down: jest.fn(() => false),
+      values: { sm: 600 }
+    } 
+  })),
+  responsiveFontSizes: jest.fn(theme => theme),
   ThemeProvider: Object.assign(({ children }: { children: React.ReactNode }) => <div>{children}</div>, { displayName: 'ThemeProvider' })
 }));
 
@@ -21,6 +27,12 @@ jest.mock('@mui/material/Button', () => Object.assign((props: any) => (
 jest.mock('@mui/material/Alert', () => Object.assign((props: any) => (
   <div data-testid={`alert-${props.severity}`}>{props.children}</div>
 ), { displayName: 'Alert' }));
+
+// Mock the useMediaQuery hook
+jest.mock('@mui/material/useMediaQuery', () => ({
+  __esModule: true,
+  default: jest.fn().mockReturnValue(false)
+}));
 
 // Mock the JsonForms dependencies
 jest.mock('@jsonforms/react', () => ({
@@ -57,11 +69,36 @@ jest.mock('@jsonforms/material-renderers', () => ({
   materialCells: []
 }));
 
+jest.mock('@jsonforms/core', () => ({
+  isLayout: jest.fn(() => false),
+  JsonSchema: {},
+  UISchemaElement: {},
+}));
+
 // Import SchemaForm after mocking its dependencies
 import SchemaForm from './SchemaForm';
 import { JsonSchema, UISchemaElement } from '@jsonforms/core';
 
 describe('SchemaForm', () => {
+  // Simple test to ensure component renders
+  it('renders without crashing', () => {
+    const handleSubmit = jest.fn();
+    
+    // Simplify the test to just check basic rendering
+    render(
+      <SchemaForm
+        schema={{ type: 'object', properties: { test: { type: 'string', title: 'Test' } } }}
+        uiSchema={{ type: 'VerticalLayout', elements: [] }}
+        initialData={{}}
+        onSubmit={handleSubmit}
+        submitButtonText="Submit Test"
+      />
+    );
+
+    expect(screen.getByTestId('json-forms')).toBeInTheDocument();
+    expect(screen.getByTestId('submit-button')).toBeInTheDocument();
+  });
+
   // Test schema
   const testSchema: JsonSchema = {
     type: 'object',
