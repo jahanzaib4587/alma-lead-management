@@ -257,4 +257,6 @@ const SchemaForm: React.FC<SchemaFormProps> = ({
   );
 };
 
+SchemaForm.displayName = 'SchemaForm';
+
 export default SchemaForm; 

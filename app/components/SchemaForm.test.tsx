@@ -5,10 +5,10 @@ import '@testing-library/jest-dom';
 // Mock the @mui/material dependencies
 jest.mock('@mui/material/styles', () => ({
   createTheme: jest.fn(() => ({})),
-  ThemeProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
+  ThemeProvider: Object.assign(({ children }: { children: React.ReactNode }) => <div>{children}</div>, { displayName: 'ThemeProvider' })
 }));
 
-jest.mock('@mui/material/Button', () => (props: any) => (
+jest.mock('@mui/material/Button', () => Object.assign((props: any) => (
   <button
     onClick={props.onClick}
     disabled={props.disabled}
@@ -16,15 +16,15 @@ jest.mock('@mui/material/Button', () => (props: any) => (
   >
     {props.children}
   </button>
-));
+), { displayName: 'Button' }));
 
-jest.mock('@mui/material/Alert', () => (props: any) => (
+jest.mock('@mui/material/Alert', () => Object.assign((props: any) => (
   <div data-testid={`alert-${props.severity}`}>{props.children}</div>
-));
+), { displayName: 'Alert' }));
 
 // Mock the JsonForms dependencies
 jest.mock('@jsonforms/react', () => ({
-  JsonForms: (props: any) => {
+  JsonForms: Object.assign((props: any) => {
     // Simulate the onChange being called when data changes
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const name = e.target.name;
@@ -49,7 +49,7 @@ jest.mock('@jsonforms/react', () => ({
         ))}
       </div>
     );
-  }
+  }, { displayName: 'JsonForms' })
 }));
 
 jest.mock('@jsonforms/material-renderers', () => ({

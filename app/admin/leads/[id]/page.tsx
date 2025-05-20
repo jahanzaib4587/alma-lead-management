@@ -170,7 +170,7 @@ export default function LeadDetailPage({ params }: LeadPageProps) {
                   
                   <div>
                     <div className="text-sm text-gray-500">Submitted At</div>
-                    <div>{new Date(lead.submitted_at).toLocaleString()}</div>
+                    <div>{lead.submitted_at ? new Date(lead.submitted_at).toLocaleString() : ''}</div>
                   </div>
                   
                   <div>
@@ -204,7 +204,7 @@ export default function LeadDetailPage({ params }: LeadPageProps) {
               <div>
                 <h2 className="font-medium mb-4 text-gray-900">Visas of Interest</h2>
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {lead.visas_of_interest.map((visa, index) => (
+                  {lead.visas_of_interest?.map((visa, index) => (
                     <span 
                       key={index} 
                       className="px-2 py-1 bg-gray-100 rounded-md text-sm"

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { VisaType } from "../types";
+import { visaTypes } from "../types";
 
 export const leadFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -12,7 +12,7 @@ export const leadFormSchema = z.object({
       message: "Must be a LinkedIn URL",
     }),
   visasOfInterest: z
-    .array(z.nativeEnum(VisaType))
+    .array(z.enum(visaTypes))
     .min(1, "Select at least one visa type"),
   resume: z
     .instanceof(File)

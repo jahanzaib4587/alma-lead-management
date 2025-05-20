@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { Lead, LeadStatus } from '@/app/types';
 import { supabase } from '@/app/services/supabaseClient';
+import { uploadFileToSupabase } from '@/app/services/uploadFileToSupabase';
 
 export async function POST(req: NextRequest) {
   try {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Lead, LeadStatus } from "@/app/types";
+import { Lead, LeadStatus } from "../../types";
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/app/services/supabaseClient';
 

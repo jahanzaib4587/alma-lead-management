@@ -1,4 +1,4 @@
-import { Lead, LeadStatus } from "../types";
+import { Lead, LeadStatus } from '../types';
 
 // In a real application, this would be an environment variable
 

@@ -1,7 +1,15 @@
 import NextAuth from "next-auth";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { User } from "../types";
+
+// Define User type inline
+interface AppUser {
+  id: string;
+  name?: string;
+  email: string;
+  role: "ADMIN" | "USER";
+  image?: string;
+}
 
 // Extend NextAuth types
 declare module "next-auth" {
@@ -14,6 +22,11 @@ declare module "next-auth" {
       role: "ADMIN" | "USER";
     };
   }
+  
+  interface User {
+    id: string;
+    role: "ADMIN" | "USER";
+  }
 }
 
 declare module "next-auth/jwt" {
@@ -24,7 +37,7 @@ declare module "next-auth/jwt" {
 }
 
 // Mock users database
-const users: User[] = [
+const users: AppUser[] = [
   {
     id: "1",
     name: "Admin User",
@@ -89,7 +102,7 @@ export const authOptions: NextAuthOptions = {
     session({ session, token }) {
       if (session.user && token) {
         session.user.id = token.id as string;
-        session.user.role = token.role as "ADMIN" | "USER";
+        session.user.role = token.role;
       }
       return session;
     },

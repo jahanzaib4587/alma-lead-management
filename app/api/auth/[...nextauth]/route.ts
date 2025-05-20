@@ -1,7 +1,7 @@
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -32,12 +32,13 @@ export const authOptions = {
     error: "/login"
   },
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        // @ts-ignore - Add custom properties to token
         token.role = user.role;
         token.id = user.id;
       }
@@ -45,6 +46,7 @@ export const authOptions = {
     },
     async session({ session, token }) {
       if (session?.user) {
+        // @ts-ignore - Add custom properties to session
         session.user.role = token.role;
         session.user.id = token.id;
       }

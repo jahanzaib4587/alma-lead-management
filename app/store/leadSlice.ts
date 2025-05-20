@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Lead } from '../types';
-import { LeadStatus } from '../types/index';
+import { LeadStatus } from '../types';
 import { leadService } from '../services/api';
 
 // Define the slice state interface
@@ -61,7 +61,7 @@ export const fetchLeadById = createAsyncThunk(
 
 export const submitLead = createAsyncThunk(
   'leads/submitLead',
-  async (leadData: Record<string, unknown>) => {
+  async (leadData: FormData) => {
     return await leadService.submitLead(leadData);
   }
 );

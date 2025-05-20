@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { LeadStatus } from "@/app/types";
+import { Lead, LeadStatus } from '@/app/types';
 import { supabase } from '@/app/services/supabaseClient';
 
 export async function GET(

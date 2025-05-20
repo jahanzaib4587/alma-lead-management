@@ -83,8 +83,8 @@ export default function AdminPage() {
           break;
         case "submittedAt":
         default:
-          firstValue = new Date(a.submitted_at).getTime();
-          secondValue = new Date(b.submitted_at).getTime();
+          firstValue = new Date(a.submitted_at ?? 0).getTime();
+          secondValue = new Date(b.submitted_at ?? 0).getTime();
           break;
       }
 
@@ -306,14 +306,16 @@ export default function AdminPage() {
                             </div>
                         </td>
                           <td className="px-6 py-4 text-gray-600">
-                            {new Date(lead.submitted_at).toLocaleDateString("en-US", {
-                              month: "2-digit",
-                              day: "2-digit",
-                              year: "numeric"
-                            })}, {new Date(lead.submitted_at).toLocaleTimeString("en-US", {
-                              hour: "2-digit",
-                              minute: "2-digit"
-                            })}
+                            {lead.submitted_at ?
+                              `${new Date(lead.submitted_at).toLocaleDateString("en-US", {
+                                month: "2-digit",
+                                day: "2-digit",
+                                year: "numeric"
+                              })}, ${new Date(lead.submitted_at).toLocaleTimeString("en-US", {
+                                hour: "2-digit",
+                                minute: "2-digit"
+                              })}`
+                              : '—'}
                         </td>
                           <td className="px-6 py-4">
                           <span
@@ -389,4 +391,5 @@ export default function AdminPage() {
       </div>
     </AuthCheck>
   );
-} 
+}
+AdminPage.displayName = 'AdminPage'; 
