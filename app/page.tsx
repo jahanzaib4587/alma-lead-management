@@ -18,7 +18,7 @@ const formSchema = z.object({
   country: z.string().min(2, 'Country is required'),
   linkedInProfile: z.string().url('Enter a valid URL').optional().or(z.literal('')),
   visasOfInterest: z.array(z.string()).min(1, 'Select at least one visa category'),
-  additionalInformation: z.string().min(10, 'Please provide more details about your situation'),
+  additionalInformation: z.string().min(10, 'Please provide at least 20 words about your situation (minimum 10 characters)'),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -493,12 +493,17 @@ export default function AssessmentForm() {
                 </div>
               </div>
               <h3 className="text-center text-lg font-semibold mb-4">How can we help you?</h3>
+              <p className="text-sm text-gray-600 max-w-md mx-auto mb-4 leading-relaxed">
+                Please describe your situation with at least 20 words to help us provide a better assessment.
+              </p>
               <textarea
                 {...register("additionalInformation")}
                 placeholder="What is your current status and when does it expire?
 What is your past immigration history?
 Are you looking for long-term permanent residence or short-term employment visa or both?
-Any timeline considerations?"
+Any timeline considerations?
+
+(Please use at least 20 words)"
                 className={`w-full min-h-[120px] border ${errors.additionalInformation ? 'border-red-300 bg-red-50' : 'border-gray-300'} rounded-md p-3 text-sm shadow-sm placeholder:text-gray-400`}
                 disabled={isSubmitting}
               ></textarea>

@@ -80,4 +80,38 @@ export async function PATCH(
       { status: 500 }
     );
   }
-} 
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const leadId = params.id;
+  
+  // Check if Supabase client is available
+  if (!supabase) {
+    console.error('Supabase client is not initialized');
+    return NextResponse.json(
+      { error: 'Database connection not available' },
+      { status: 503 }
+    );
+  }
+  
+  // Delete the lead from Supabase
+  const { error } = await supabase
+    .from('leads')
+    .delete()
+    .eq('id', leadId);
+  
+  if (error) {
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
+  }
+  
+  return NextResponse.json(
+    { success: true, message: "Lead successfully deleted" },
+    { status: 200 }
+  );
+}
