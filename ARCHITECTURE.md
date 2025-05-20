@@ -2,15 +2,17 @@
 
 ## System Architecture Overview
 
-The Lead Management System is a modern web application built with Next.js, featuring a responsive UI optimized for all device sizes. It follows a client-server architecture with a clear separation of concerns.
+The Lead Management System is a modern web application built with Next.js, featuring a responsive UI optimized for all device sizes. It implements a client-server architecture with a clear separation of concerns and resilient integration with Supabase.
 
 ### Core Technologies
 
 - **Frontend**: Next.js 13.4 with App Router
-- **UI**: React with Material UI components and Tailwind CSS
+- **UI**: React 18 with Material UI components and Tailwind CSS
 - **State Management**: Redux Toolkit
 - **Form Handling**: JSON Forms
 - **Authentication**: NextAuth.js
+- **Database**: Supabase (PostgreSQL)
+- **Storage**: Supabase Storage
 - **Typing**: TypeScript
 
 ## Component Hierarchy
@@ -27,35 +29,37 @@ The Lead Management System is a modern web application built with Next.js, featu
 │   │   │   └── JsonForms
 │   │   └── Footer
 │   │
-│   └── AuthCheck
-│       └── Protected Routes
+│   ├── AdminPage
+│   │   ├── AuthCheck
+│   │   ├── LeadTable
+│   │   │   └── LeadTableRow
+│   │   ├── FilterControls
+│   │   └── Pagination
+│   │
+│   └── API Routes
+       ├── Assessment
+       ├── Leads
+       └── Authentication
 ```
 
 ## Key Components
 
 ### 1. Provider Layer
 
-The application uses a nested provider pattern to manage authentication and state:
+The application uses providers to manage authentication and state:
 
 - **SessionProvider**: Client component that wraps the application with NextAuth's authentication context
 - **ReduxProvider**: Provides global state management via Redux store
 
 ```typescript
-// Provider component combining authentication and state
-export function Providers({
-  children,
-  session
-}: {
-  children: React.ReactNode;
-  session: Session | null | undefined;
-}): React.ReactElement {
-  return (
-    <SessionProvider session={session}>
-      <ReduxProvider>
-        {children}
-      </ReduxProvider>
-    </SessionProvider>
-  );
+// SessionProvider implementation
+export function Providers({ children }: { children: ReactNode }) {
+  return <SessionProvider>{children}</SessionProvider>;
+}
+
+// ReduxProvider implementation
+export function ReduxProvider({ children }: ReduxProviderProps): React.ReactElement {
+  return <Provider store={store}>{children}</Provider>;
 }
 ```
 
@@ -64,6 +68,7 @@ export function Providers({
 - **AuthCheck**: Guards routes requiring authentication
 - **SessionProvider**: Manages user session state
 - **NextAuth Integration**: Handles login, session management, and user data
+- **JWT Extensions**: Custom fields for role-based access
 
 ### 3. Form System
 
@@ -93,15 +98,38 @@ useEffect(() => {
 - **Redux Toolkit**: Manages global application state
 - **Slices**: Modular state divided by domain (leads, auth, etc.)
 - **Thunks**: Handle asynchronous operations with API
+- **Optimistic Updates**: Immediate UI responses with backend confirmation
 
 ```typescript
-// Lead slice handles async operations
+// Lead slice handles async operations with FormData
 export const submitLead = createAsyncThunk(
   'leads/submitLead',
-  async (leadData: Record<string, unknown>) => {
+  async (leadData: FormData) => {
     return await leadService.submitLead(leadData);
   }
 );
+```
+
+### 5. Database Integration
+
+- **Supabase Client**: Configured with resilience patterns
+- **Null Safety**: Graceful handling of missing client during build
+- **Connection Pooling**: Efficient database connection management
+- **Error Handling**: Comprehensive error states with fallbacks
+
+```typescript
+// Resilient Supabase client initialization
+let supabase: ReturnType<typeof createClient> | null = null;
+
+// Only create the client when environment variables are available
+if (typeof window !== 'undefined' || (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY)) {
+  const supabaseUrl = process.env.SUPABASE_URL || '';
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
+  
+  if (supabaseUrl && supabaseAnonKey) {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+  }
+}
 ```
 
 ## Data Flow
@@ -110,59 +138,88 @@ export const submitLead = createAsyncThunk(
    - User enters data in SchemaForm
    - Form validates input against JSON Schema
    - On submit, data flows to Redux via dispatch action
-   - Redux thunk calls API service
-   - API returns result which updates Redux state
+   - Redux thunk creates FormData and calls API service
+   - API uploads files to Supabase Storage and stores metadata in database
+   - Response updates Redux state with new lead information
 
 2. **Authentication Flow**:
-   - NextAuth handles authentication
-   - Session state stored in SessionProvider
-   - Protected routes check session via AuthCheck
+   - NextAuth handles credential verification
+   - JWT tokens include custom claims (role, id)
+   - Session state stored with appropriate security
+   - Protected routes check session and role via AuthCheck
    - Unauthenticated users redirected to login
 
-3. **Responsive Adaptation**:
-   - Media queries detect device size
-   - Layout components adjust based on viewport
-   - Form layouts transform for optimal UX on each device
+3. **Admin Data Flow**:
+   - Fetch leads from Supabase on admin dashboard load
+   - Redux manages sorting, filtering, and pagination locally
+   - Status updates sent to Supabase with optimistic UI updates
+   - Real-time feedback on all operations
+
+4. **Resilience Patterns**:
+   - API routes check Supabase client availability
+   - Graceful degradation when services unavailable
+   - Comprehensive error handling at all levels
+   - Build-time safety for environment variables
 
 ## Type System
 
 The application uses TypeScript throughout with strong typing patterns:
 
-- **Domain Models**: Interfaces define data structures (LeadData, VisaType)
-- **Generic Types**: Used for reusable components
-- **Union Types**: For enumerated values
+- **Domain Models**: Interfaces define data structures (Lead, VisaType)
+- **Branded Types**: For type-safe identifiers
+- **Union Types**: For enumerated values like LeadStatus
 - **Type Guards**: Ensure type safety in conditional logic
+- **Extended Type Declarations**: For NextAuth session and JWT
 
 ```typescript
 // Type definitions for domain entities
-export type VisaType = 'H-1B' | 'L-1' | 'O-1' | 'EB-1' | 'EB-2 NIW' | 'EB-2 PERM' | 'EB-3';
+export enum LeadStatus {
+  PENDING = 'PENDING',
+  REACHED_OUT = 'REACHED_OUT'
+}
 
-export interface LeadData {
-  firstName: string;
-  lastName: string;
+export type VisaType = typeof visaTypes[number];
+
+export interface Lead {
+  id: string;
+  first_name?: string;
+  last_name?: string;
   email: string;
-  // Other fields...
+  // Additional fields...
+  status: LeadStatus;
 }
 ```
 
 ## API Integration
 
-- **Service Layer**: Abstracts API calls from components
-- **Redux Thunks**: Handle asynchronous operations
-- **Error Handling**: Centralized error management
-- **Type Safety**: Ensure API contract adherence
+- **Service Layer**: Abstracts Supabase operations
+- **API Routes**: Next.js route handlers with proper validation
+- **Redux Thunks**: Handle asynchronous operations with proper types
+- **Error Handling**: Centralized error management with status codes
+- **Null Safety**: Guards against missing Supabase client
 
-## Responsiveness Strategy
+## File Storage Architecture
 
-- **Mobile-First Approach**: Base styles for mobile, enhanced for larger screens
-- **Adaptive Layouts**: Forms adjust column count based on screen width
-- **Touch Optimization**: Larger hit targets on mobile devices
-- **Viewport Settings**: Proper configuration for all devices
-- **Media Queries**: Tailwind breakpoints for consistent responsive design
+- **Supabase Storage**: Secure file storage solution
+- **File Upload**: Multi-part form data handling
+- **File Validation**: Type, size, and content restrictions
+- **File Naming**: Consistent naming with UUID-based paths
+- **Public URLs**: Secure URL generation for stored files
+
+## Deployment Architecture
+
+- **Vercel Platform**: Primary deployment target
+- **Environment Variables**: Runtime injection of secrets
+- **Build Resilience**: No failures during build when variables missing
+- **Edge Functions**: API routes deployed as edge functions
+- **Static Optimization**: Pre-rendered pages where possible
 
 ## Security Considerations
 
-- **Authentication**: NextAuth.js for secure authentication
+- **Authentication**: NextAuth.js with secure JWT handling
+- **Database Security**: Row-level security in Supabase
 - **Form Validation**: Schema-based validation prevents invalid data
 - **Type Safety**: TypeScript prevents many common vulnerabilities
-- **Session Management**: Secure handling of user sessions 
+- **Session Management**: Secure handling of user sessions
+- **File Validation**: Strict checks on uploaded files
+- **Error Handling**: Non-revealing error messages 
