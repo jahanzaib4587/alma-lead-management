@@ -3,7 +3,7 @@
 A modern lead management system built with Next.js, Tailwind CSS, Redux Toolkit, and Supabase. This application supports lead intake, role-based dashboards, and real-time state management.
 
 ## 🌐 Live Demo
-alma-lead-management-zgnb.vercel.app
+https://alma-lead-management-zgnb.vercel.app/
 
 ## 🚀 Tech Stack
 - **Framework**: Next.js 13 (App Router)
