@@ -1,202 +1,211 @@
 # Lead Management Application
 
-This is a Next.js application for managing leads in an immigration case assessment process.
+A modern, responsive application built with Next.js for immigration case assessment and lead management. The system allows potential clients to submit their information, which administrators can then review, manage, and track.
 
-## Features
+## 🚀 Key Features
 
-- Public-facing lead submission form with JSON Schema validation
-- Admin dashboard for lead management
-- Authentication for admin access
-- Schema-driven UI using JsonForms
-- Sorting, filtering, and pagination of leads
-- CSV export functionality
+- **Public Assessment Form**: User-friendly form for lead submission with file upload capability
+- **Admin Dashboard**: Comprehensive lead management interface
+- **Authentication**: Secure login with role-based access
+- **Schema-Driven UI**: Dynamic forms powered by JsonForms
+- **Advanced Lead Management**:
+  - Sorting (by name, date, status, country)
+  - Filtering by status
+  - Full-text search
+  - Pagination
+- **Data Export**: CSV export functionality
+- **Responsive Design**: Works on desktop and mobile
+- **Real-time Updates**: Instant feedback on actions
+- **Database Integration**: Supabase for data persistence
 
-## Schema-Driven UI Implementation
+## 🏗️ Technical Architecture
 
-This application uses [JsonForms](https://jsonforms.io/) to create a dynamic, schema-driven UI for the lead submission form. This approach offers several benefits:
+### Frontend
 
-1. **Separation of UI and Data**: The form's structure is defined in a JSON schema, separate from the UI rendering logic.
-2. **Declarative Form Definition**: Forms are defined using a simple JSON schema and UI schema.
-3. **Automatic Validation**: JsonForms handles validation based on the schema rules.
-4. **Dynamic UI Generation**: UI is generated based on the schema, making it easy to update form fields.
+- **Framework**: Next.js 13+ with App Router
+- **UI Library**: React 18
+- **Styling**: Tailwind CSS
+- **Forms**: 
+  - Schema-driven forms using JsonForms
+  - React Hook Form with Zod validation
+- **State Management**: Redux Toolkit with RTK Query
 
-### Implementation Details
+### Backend
 
-The schema-driven UI is implemented using:
+- **API Routes**: Next.js API Routes
+- **Authentication**: NextAuth.js
+- **Database**: Supabase (PostgreSQL)
+- **File Storage**: Supabase Storage
+- **Type Safety**: TypeScript throughout
 
-- `@jsonforms/core`: Core JsonForms library
-- `@jsonforms/react`: React bindings for JsonForms
-- `@jsonforms/material-renderers`: Material UI renderers for JsonForms
+## 📚 Schema-Driven UI Implementation
 
-### Key Components
+This application leverages [JsonForms](https://jsonforms.io/) to create dynamic, schema-driven forms:
 
-- `leadSchema.ts`: Defines the JSON schema and UI schema for the lead form
-- `SchemaForm.tsx`: A reusable component that renders forms based on JSON schemas
-- `page.tsx`: Implements the form using the schema-driven approach
+- **Separation of Concerns**: UI structure and data model are defined separately
+- **Declarative Form Definition**: Forms defined through JSON Schema
+- **Automatic Validation**: Built-in validation based on schema
+- **Responsive Layouts**: Automatically adapts to screen sizes
 
-### Schema Definition
+### Schema Components
 
-The form schema is defined in `app/schemas/leadSchema.ts`:
+- `app/schemas/leadSchema.ts`: Schema and UI schema definitions
+- `app/components/SchemaForm.tsx`: Reusable schema-based form component
 
-```typescript
-export const leadSchema: JsonSchema = {
-  type: 'object',
-  properties: {
-    firstName: {
-      type: 'string',
-      title: 'First Name',
-      minLength: 1
-    },
-    // Additional properties...
-  },
-  required: ['firstName', 'lastName', 'email', 'visasOfInterest']
-};
+## 🔄 State Management with Redux
+
+The application implements a comprehensive Redux state management system:
+
+- **Store Structure**: State organized by domain (leads, auth, etc.)
+- **Async Operations**: API interactions handled via thunks
+- **Type Safety**: Fully typed state and actions
+- **Optimistic Updates**: Immediate UI updates with backend confirmation
+
+## 🔐 Authentication & Security
+
+- **Protected Routes**: Admin routes secured with authentication
+- **Role-Based Access**: Different permissions for different user roles
+- **JWT-Based Auth**: Secure token management
+- **Form Validation**: Extensive input validation
+- **File Validation**: Type and size restrictions for uploaded files
+
+## 📊 Database Integration with Supabase
+
+The application utilizes Supabase for data storage and management:
+
+- **PostgreSQL Database**: For structured data storage
+- **Supabase Storage**: For file uploads
+- **Real-time Capabilities**: For immediate updates
+- **Row-Level Security**: For data protection
+
+### Resilient Implementation
+
+- **Graceful Degradation**: Handles cases when Supabase is unavailable
+- **Null Safety**: Checks for null clients during build process
+- **Error Handling**: Comprehensive error states for all operations
+
+## 🚀 Deployment
+
+### Environment Variables
+
+The following environment variables need to be set in your deployment environment:
+
+```
+NEXTAUTH_SECRET=your_secret_here
+NEXTAUTH_URL=your_deployment_url
+
+# Supabase Configuration
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-The UI schema that controls how the form is rendered:
+### Deployment on Vercel
 
-```typescript
-export const leadUiSchema: UISchemaElement = {
-  type: 'VerticalLayout',
-  elements: [
-    {
-      type: 'HorizontalLayout',
-      elements: [
-        {
-          type: 'Control',
-          scope: '#/properties/firstName'
-        },
-        // Additional controls...
-      ]
-    },
-    // Additional layout elements...
-  ]
-};
-```
+1. Connect your GitHub repository to Vercel
+2. Configure the environment variables in Vercel's dashboard
+3. Deploy the application
 
-## Redux State Management
+**Important**: The application handles missing environment variables during the build process, ensuring successful builds even when environment variables will only be available at runtime.
 
-This application implements a centralized state management system using Redux Toolkit. The Redux implementation includes:
-
-### Store Structure
-
-- **Lead Slice**: Manages lead data including fetching, creating, updating, and deleting leads
-- **Async Thunks**: Handles API interactions with proper loading states 
-- **Selectors**: Type-safe hooks for accessing store data
-
-### Key Components
-
-- `leadSlice.ts`: The core Redux slice for lead management
-- `store/index.ts`: The Redux store configuration
-- `store/hooks.ts`: Type-safe hooks for React components
-- `store/Provider.tsx`: The Redux provider component
-
-### Data Flow
-
-1. Components dispatch actions using `useAppDispatch`
-2. Actions trigger API calls via thunks
-3. Reducers update the state based on API responses
-4. Components access the updated state via `useAppSelector`
-
-### Benefits
-
-- **Centralized Data**: All lead data is managed in a single place
-- **Real-time Updates**: Changes in one component immediately reflect in others
-- **Type Safety**: TypeScript integration ensures type safety throughout the application
-- **Consistent Loading States**: Standardized loading states for better user experience
-- **Predictable State Updates**: Redux's unidirectional data flow makes state changes predictable
-
-## Getting Started
+## 💻 Development
 
 ### Prerequisites
 
 - Node.js 18+
 - npm or yarn
 
-### Installation
+### Getting Started
 
 1. Clone the repository
 2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set up environment variables:
+   Create a `.env.local` file with the required variables.
+
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+5. Open [http://localhost:3000](http://localhost:3000) to view the application
+
+### Testing
 
 ```bash
-npm install
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
 ```
 
-3. Run the development server:
+## 🧩 Project Structure
 
-```bash
-npm run dev
+```
+app/
+├── api/                   # API routes
+│   ├── assessment/        # Lead submission endpoint
+│   ├── auth/              # Authentication endpoints
+│   └── leads/             # Lead management endpoints
+├── components/            # Reusable components
+├── lib/                   # Utilities and helper functions
+├── schemas/               # JSON schemas for forms
+├── services/              # Service layer for API interactions
+│   └── supabaseClient.ts  # Supabase client configuration
+├── store/                 # Redux store setup
+└── types/                 # TypeScript type definitions
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) to see the application
+## 🔍 Features in Detail
 
-## Usage
+### Lead Submission Form
 
-### Public Form
-
-Visit the homepage to access the lead submission form. Fill out the required fields and submit.
+The form collects essential information from potential clients:
+- Personal details
+- Contact information
+- Visa preferences
+- Work experience
+- Educational background
+- Resume upload
 
 ### Admin Dashboard
 
-Access the admin dashboard at `/admin`. You'll need to log in with valid credentials.
-
-- View all leads
-- Sort by various fields
-- Filter by status
-- Export leads to CSV
+Administrators can:
+- View a comprehensive list of leads
+- Sort and filter leads
+- Search for specific leads
 - View detailed lead information
+- Update lead status
+- Export lead data to CSV
+- Manage the complete lead lifecycle
 
-## Tech Stack
+### Authentication
 
-- **Frontend Framework**: Next.js with App Router
-- **Styling**: Tailwind CSS
-- **Form Handling**: React Hook Form with Zod validation
-- **Authentication**: NextAuth.js
-- **HTTP Client**: Axios
+The application uses NextAuth.js for authentication:
+- Credential-based login
+- Secure session management
+- Role-based authorization
 
-## Deployment
+## 🔮 Future Enhancements
 
-The application can be deployed on Vercel:
+- **Email Notifications**: Automated emails for new leads and status changes
+- **Advanced Analytics**: Dashboards with lead conversion metrics
+- **Multi-language Support**: Internationalization for global reach
+- **Calendar Integration**: Scheduling appointments with leads
+- **Document Management**: Additional document types and management
+- **Custom Workflows**: Configurable lead processing workflows
 
-1. Push your code to a GitHub repository
-2. Connect your repository to Vercel
-3. Deploy with default settings
+## 👨‍💻 Admin Access
 
-## Design Choices
-
-### Architecture
-
-- **App Router**: Leverages Next.js 13+ App Router for better performance and server components
-- **API Routes**: Uses Next.js API routes to mock backend functionality
-- **Mock Database**: Simulates database operations with in-memory storage
-- **Service Layer**: Abstracts API calls through a service layer for better code organization
-
-### UI/UX
-
-- **Responsive Design**: Adapts to different screen sizes
-- **Form Validation**: Provides immediate feedback for invalid inputs
-- **Status Indicators**: Visual indicators for lead status
-- **Search & Filter**: Quick access to relevant leads
-- **Pagination**: Efficient navigation through large datasets
-
-### Security
-
-- **Authentication**: Protects admin routes with NextAuth.js
-- **Role-Based Access**: Only authenticated users can access the admin dashboard
-- **Secure Form Submissions**: Validates all inputs before processing
-- **File Upload Validation**: Restricts file types and sizes
-
-## Future Enhancements
-
-- **Email Notifications**: Send automatic emails to new leads
-- **Data Export**: Allow exporting lead data in various formats
-- **Advanced Filtering**: More sophisticated search and filter options
-- **Lead Notes**: Add the ability to attach notes to leads
-- **Calendar Integration**: Schedule follow-up appointments with leads
-
-## Admin Login Credentials
-
-For demo purposes, you can use the following credentials to access the admin dashboard:
+For demonstration purposes, you can access the admin dashboard with:
 
 - **Email**: admin@alma.com
 - **Password**: password123
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
