@@ -1,26 +1,206 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --primary: #11b981;
+    --secondary: #f2f7f5;
+  }
+  
+  /* Responsive font sizing */
+  html {
+    font-size: 14px;
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  @screen sm {
+    html {
+      font-size: 15px;
+    }
+  }
+  
+  @screen lg {
+    html {
+      font-size: 16px;
+    }
+  }
+  
+  /* Improve input experience on mobile */
+  input, 
+  select, 
+  textarea {
+    @apply text-base;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+  
+  /* Ensure proper viewport behavior */
+  body {
+    @apply antialiased text-gray-800;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Fix viewport height issues on mobile */
+  html {
+    height: -webkit-fill-available;
+  }
+  
+  /* Ensure all images are responsive by default */
+  img {
+    @apply max-w-full h-auto;
+  }
+  
+  /* Basic form reset for better cross-browser consistency */
+  button,
+  input,
+  select,
+  textarea {
+    font-family: inherit;
+    font-size: 100%;
+    line-height: 1.15;
+    margin: 0;
+  }
+  
+  button,
+  select {
+    text-transform: none;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .btn-primary {
+    @apply bg-[#11b981] text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition;
+  }
+  
+  .input-field {
+    @apply w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#11b981] focus:border-transparent;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+  
+  /* Responsive container classes */
+  .container-sm {
+    @apply w-full px-4 mx-auto;
+    max-width: 640px;
+  }
+  
+  .container-md {
+    @apply w-full px-4 mx-auto;
+    max-width: 768px;
+  }
+  
+  .container-lg {
+    @apply w-full px-4 mx-auto;
+    max-width: 1024px;
+  }
+  
+  .container-xl {
+    @apply w-full px-4 mx-auto;
+    max-width: 1280px;
+  }
+  
+  /* Responsive card component */
+  .responsive-card {
+    @apply bg-white rounded-lg shadow-sm overflow-hidden;
+    @apply p-4 sm:p-6 md:p-8;
+  }
+  
+  /* Responsive form group */
+  .form-group {
+    @apply mb-4 sm:mb-6;
+  }
+  
+  /* Responsive buttons */
+  .responsive-btn {
+    @apply rounded-md transition duration-150 ease-in-out;
+    @apply px-3 py-2 sm:px-4 sm:py-2 md:px-6 md:py-3;
+    @apply text-sm sm:text-base;
+  }
+  
+  /* Mobile navigation */
+  .mobile-nav {
+    @apply fixed inset-0 bg-white z-50 overflow-y-auto;
+    @apply transform transition-transform duration-300 ease-in-out;
+    @apply sm:hidden;
+  }
+}
+
+/* Ensure images are responsive */
+@layer utilities {
+  .responsive-img {
+    @apply max-w-full h-auto;
+  }
+  
+  /* Responsive gap utilities */
+  .gap-responsive {
+    @apply gap-2 sm:gap-3 md:gap-4;
+  }
+  
+  /* Responsive padding utilities */
+  .p-responsive {
+    @apply p-3 sm:p-4 md:p-6;
+  }
+  
+  /* Responsive margin utilities */
+  .m-responsive {
+    @apply m-3 sm:m-4 md:m-6;
+  }
+  
+  /* Mobile-first display utilities */
+  .hide-mobile {
+    @apply hidden sm:block;
+  }
+  
+  .show-mobile {
+    @apply block sm:hidden;
+  }
+  
+  /* Touch target sizing - ensure minimum 44px for touch targets */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+    @apply flex items-center justify-center;
+  }
+  
+  /* Grid layouts */
+  .grid-responsive {
+    @apply grid;
+    @apply grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4;
+    @apply gap-4 sm:gap-6;
+  }
+  
+  /* Text responsive utilities */
+  .text-responsive-xs {
+    @apply text-xs sm:text-sm;
+  }
+  
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-responsive-base {
+    @apply text-base sm:text-lg;
+  }
+  
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl md:text-2xl;
+  }
+  
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl;
+  }
+  
+  /* Fix for 100vh issue on mobile */
+  .min-h-screen-safe {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
 }
