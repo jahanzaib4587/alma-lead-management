@@ -106,13 +106,10 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
-    
     const firstName = formData.get("firstName") as string;
     const lastName = formData.get("lastName") as string;
     const email = formData.get("email") as string;
     const linkedInProfile = formData.get("linkedInProfile") as string;
-    
-    // Handle visasOfInterest which might be JSON string
     let visasOfInterest: string[] = [];
     const visasData = formData.get("visasOfInterest");
     if (visasData) {
@@ -122,11 +119,8 @@ export async function POST(req: NextRequest) {
         console.error("Error parsing visasOfInterest:", e);
       }
     }
-    
     const additionalInformation = formData.get("additionalInformation") as string || "";
     const country = formData.get("country") as string || "Unknown";
-    
-    // Handle files
     const files = [];
     for (let i = 0; i < 3; i++) {
       const file = formData.get(`file${i}`) as File;
@@ -139,7 +133,6 @@ export async function POST(req: NextRequest) {
         });
       }
     }
-    
     const newLead: Lead = {
       id: uuidv4(),
       firstName,
@@ -153,10 +146,6 @@ export async function POST(req: NextRequest) {
       additionalInformation,
       files: files.length > 0 ? files : undefined
     };
-    
-    // Add to our mock database
-    mockLeads.unshift(newLead);
-    
     return NextResponse.json(newLead, { status: 201 });
   } catch (error) {
     console.error("Error creating lead:", error);
