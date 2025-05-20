@@ -8,6 +8,15 @@ export async function GET(
 ) {
   const leadId = params.id;
   
+  // Check if Supabase client is available
+  if (!supabase) {
+    console.error('Supabase client is not initialized');
+    return NextResponse.json(
+      { error: 'Database connection not available' },
+      { status: 503 }
+    );
+  }
+  
   // Find the lead by ID from Supabase
   const { data: lead, error } = await supabase
     .from('leads')
@@ -30,6 +39,15 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Check if Supabase client is available
+    if (!supabase) {
+      console.error('Supabase client is not initialized');
+      return NextResponse.json(
+        { error: 'Database connection not available' },
+        { status: 503 }
+      );
+    }
+    
     const { status } = await request.json();
     
     if (!Object.values(LeadStatus).includes(status)) {
